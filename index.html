@@ -19,6 +19,7 @@
     --radius: 10px;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; }
   body {
     background: var(--ivory);
@@ -33,7 +34,7 @@
   .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
 
   header.top { border-bottom: 1px solid var(--line); }
-  header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; flex-wrap: wrap; }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 6px 16px; min-height: 60px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
   .brand { font-weight: 700; color: var(--ink); text-decoration: none; }
   nav { display: flex; align-items: center; gap: 16px; font-size: .95rem; }
   nav a { color: var(--muted); text-decoration: none; }
@@ -162,6 +163,7 @@
    ===================================================================== */
 const SUPABASE_URL = 'https://pfytwdvruueunwrqsfun.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_BX0oahVdrNNt1ejbElluNQ_0DMS_txs';
+
 
 const TZ = 'Asia/Seoul';
 const STUDENT_ID_RE = /^\d{4}-\d{5}$/;
@@ -382,15 +384,13 @@ function renderLogin() {
 function renderSignup() {
   render(`
     <h1>가입하기</h1>
-    <p class="lead">한 사람당 한 번만 가입할 수 있습니다. 가입 후 서울대 메일로 온 인증 링크를 눌러야 로그인할 수 있습니다.</p>
-    <form id="f" class="card narrow" novalidate>
+    <form id="f" class="card narrow" novalidate style="margin-top:24px">
       <label for="name">이름</label>
       <input id="name" type="text" autocomplete="name" maxlength="30" required>
       <p class="err" id="e-name"></p>
 
       <label for="sid">학번</label>
       <input id="sid" type="text" inputmode="numeric" placeholder="0000-00000" maxlength="10" pattern="\\d{4}-\\d{5}" required>
-      <p class="hint">숫자만 입력하면 자동으로 형식이 맞춰집니다.</p>
       <p class="err" id="e-sid"></p>
 
       <label for="email">서울대 메일</label>
@@ -405,12 +405,6 @@ function renderSignup() {
       <label for="pw2">비밀번호 확인</label>
       <input id="pw2" type="password" autocomplete="new-password" required>
       <p class="err" id="e-pw2"></p>
-
-      <label class="check" style="margin-top:22px">
-        <input id="agree" type="checkbox">
-        <span>실습희망교 배정을 위해 이름, 학번, 메일 주소를 수집하는 데 동의합니다. 이 정보는 배정이 끝나면 삭제합니다.</span>
-      </label>
-      <p class="err" id="e-agree"></p>
 
       <p class="err" id="ferr"></p>
       <button class="btn full" id="submit">가입하기</button>
@@ -428,8 +422,7 @@ function renderSignup() {
     sid: () => STUDENT_ID_RE.test(sid.value.trim()) ? '' : MSG.INVALID_STUDENT_ID,
     email: () => SNU_EMAIL_RE.test($('#email').value.trim().toLowerCase()) ? '' : MSG.SNU_EMAIL_ONLY,
     pw: () => $('#pw').value.length >= 8 ? '' : '비밀번호는 8자 이상이어야 합니다.',
-    pw2: () => $('#pw2').value === $('#pw').value ? '' : '비밀번호가 서로 다릅니다.',
-    agree: () => $('#agree').checked ? '' : '개인정보 수집에 동의해야 가입할 수 있습니다.'
+    pw2: () => $('#pw2').value === $('#pw').value ? '' : '비밀번호가 서로 다릅니다.'
   };
   const show = (k) => {
     const m = checks[k]();
@@ -568,7 +561,7 @@ function renderApply() {
   const preview = p.is_admin && !isOpen();
   render(`
     <h1>실습희망교 신청</h1>
-    <p class="lead">한 사람당 한 학교만 신청할 수 있고, 학교마다 정원이 차는 순서대로 마감됩니다. 인원은 몇 초마다 자동으로 갱신됩니다.</p>
+    <p class="lead">인원은 몇 초마다 자동으로 갱신됩니다.</p>
     ${preview ? `<div class="banner">관리자 미리보기입니다. 일반 회원은 ${esc(fmtFull(st.open_at))} 전까지 사전 페이지를 봅니다. 실제 학교는 관리자도 시작 시각 이후에만 신청할 수 있고, 테스트교는 지금 신청해 볼 수 있습니다.</div>` : ''}
     ${isClosed() ? `<div class="banner">신청 기간이 끝났습니다.</div>` : ''}
     <div id="notice-wrap">${noticeHtml()}</div>
@@ -642,9 +635,9 @@ function schoolRow(s) {
   const isMine = mine && mine.school_id === s.id;
   let label = '신청', disabled = false;
   if (isMine) { label = '신청함'; disabled = true; }
-  else if (mine) { disabled = true; }
   else if (cap == null) { label = '인원 미정'; disabled = true; }
   else if (full) { label = '마감'; disabled = true; }
+  else if (mine) { disabled = true; }
   else if (!timeBypass && isClosed()) { label = '기간 종료'; disabled = true; }
   else if (!timeBypass && !isOpen()) { label = '시작 전'; disabled = true; }
   const pct = cap ? Math.min(100, s.applied / cap * 100) : 0;
